@@ -57,14 +57,12 @@ BOOL CSymbolAddressCache::TryCache(void)
 	LOAD_OFFSET(MethodDesc::s_pfnHasClassOrMethodInstantiation);
 	LOAD_OFFSET(MethodDesc::s_pfnContainsGenericVariables);
 	LOAD_OFFSET(MethodDesc::s_pfnGetWrappedMethodDesc);
-	LOAD_OFFSET(MethodDesc::s_pfnGetDomain);
+	LOAD_OFFSET(MethodDesc::s_pfnGetModule);
 	LOAD_OFFSET(MethodDesc::s_pfnGetLoaderModule);
 
 	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnConstructor);
-	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnConstructor_v45);
 	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnStart);
-	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnNext_v4);
-	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnNext_v2);
+	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnNext);
 	LOAD_OFFSET(LoadedMethodDescIterator::s_pfnCurrent);
 
 
@@ -226,14 +224,12 @@ void CSymbolAddressCache::GenerateClrCache(void)
 	SAVE_OFFSET(MethodDesc::s_pfnHasClassOrMethodInstantiation);
 	SAVE_OFFSET(MethodDesc::s_pfnContainsGenericVariables);
 	SAVE_OFFSET(MethodDesc::s_pfnGetWrappedMethodDesc);
-	SAVE_OFFSET(MethodDesc::s_pfnGetDomain);
+	SAVE_OFFSET(MethodDesc::s_pfnGetModule);
 	SAVE_OFFSET(MethodDesc::s_pfnGetLoaderModule);
 
 	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnConstructor);
-	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnConstructor_v45);
 	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnStart);
-	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnNext_v4);
-	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnNext_v2);
+	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnNext);
 	SAVE_OFFSET(LoadedMethodDescIterator::s_pfnCurrent);
 
 

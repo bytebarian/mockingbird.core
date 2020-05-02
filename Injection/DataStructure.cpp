@@ -20,15 +20,13 @@ MethodDesc::PFN_StripMethodInstantiation MethodDesc::s_pfnStripMethodInstantiati
 MethodDesc::PFN_HasClassOrMethodInstantiation MethodDesc::s_pfnHasClassOrMethodInstantiation = NULL;
 MethodDesc::PFN_ContainsGenericVariables MethodDesc::s_pfnContainsGenericVariables = NULL;
 MethodDesc::PFN_GetWrappedMethodDesc MethodDesc::s_pfnGetWrappedMethodDesc = NULL;
-MethodDesc::PFN_GetDomain MethodDesc::s_pfnGetDomain = NULL;
+MethodDesc::PFN_GetModule MethodDesc::s_pfnGetModule = NULL;
 MethodDesc::PFN_GetLoaderModule MethodDesc::s_pfnGetLoaderModule = NULL;
 
 
 LoadedMethodDescIterator::PFN_LoadedMethodDescIteratorConstructor LoadedMethodDescIterator::s_pfnConstructor = NULL;
-LoadedMethodDescIterator::PFN_LoadedMethodDescIteratorConstructor_v45 LoadedMethodDescIterator::s_pfnConstructor_v45 = NULL;
 LoadedMethodDescIterator::PFN_Start LoadedMethodDescIterator::s_pfnStart = NULL;
-LoadedMethodDescIterator::PFN_Next_v4 LoadedMethodDescIterator::s_pfnNext_v4 = NULL;
-LoadedMethodDescIterator::PFN_Next_v2 LoadedMethodDescIterator::s_pfnNext_v2 = NULL;
+LoadedMethodDescIterator::PFN_Next LoadedMethodDescIterator::s_pfnNext = NULL;
 LoadedMethodDescIterator::PFN_Current LoadedMethodDescIterator::s_pfnCurrent = NULL;
 
 // detect the version of CLR

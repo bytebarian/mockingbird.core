@@ -1,8 +1,8 @@
 #pragma once
 #include "PdbHelper.h"
 class MethodDesc;
-class Module;
 class AppDomain;
+class Module { public: AppDomain GetDomain(); };
 class LoadedMethodDescIterator;
 class CSymbolAddressCache;
 class CInjection;
@@ -24,7 +24,6 @@ extern DotNetVersion g_tDotNetVersion;
 extern HMODULE g_hJitModule;
 extern HMODULE g_hClrModule;
 
-BOOL DetermineDotNetVersion(void);
 ////////////////////////////////////////////////////////////////////
 // ICorJitCompiler interface from JIT dll
 class ICorJitCompiler 
@@ -52,12 +51,12 @@ class MethodDesc
 
 	typedef void (MethodDesc::*PFN_Reset)(void);
 	typedef BOOL (MethodDesc::*PFN_IsGenericMethodDefinition)(void);
-	typedef ULONG (MethodDesc::*PFN_GetNumGenericMethodArgs)(void);
+	typedef DWORD (MethodDesc::*PFN_GetNumGenericMethodArgs)(void);
 	typedef MethodDesc * (MethodDesc::*PFN_StripMethodInstantiation)(void);
 	typedef BOOL (MethodDesc::*PFN_HasClassOrMethodInstantiation)(void);
 	typedef BOOL (MethodDesc::*PFN_ContainsGenericVariables)(void);	
 	typedef MethodDesc * (MethodDesc::*PFN_GetWrappedMethodDesc)(void);
-	typedef AppDomain * (MethodDesc::*PFN_GetDomain)(void);
+	typedef Module* (MethodDesc::*PFN_GetModule)(void);
 	typedef Module * (MethodDesc::*PFN_GetLoaderModule)(void);
 
 public:
@@ -68,7 +67,7 @@ public:
 	BOOL HasClassOrMethodInstantiation(void)  { return (this->*s_pfnHasClassOrMethodInstantiation)(); }
 	BOOL ContainsGenericVariables(void) { return (this->*s_pfnContainsGenericVariables)(); }
 	MethodDesc * GetWrappedMethodDesc(void) { return (this->*s_pfnGetWrappedMethodDesc)(); }
-	AppDomain * GetDomain(void) { return (this->*s_pfnGetDomain)(); }
+	//AppDomain * GetDomain(void) { return (this->*s_pfnGetModule)()->GetDomain(); }
 	Module * GetLoaderModule(void) { return (this->*s_pfnGetLoaderModule)(); }
 	
 private:
@@ -79,7 +78,7 @@ private:
 	static PFN_HasClassOrMethodInstantiation s_pfnHasClassOrMethodInstantiation;
 	static PFN_ContainsGenericVariables s_pfnContainsGenericVariables;
 	static PFN_GetWrappedMethodDesc s_pfnGetWrappedMethodDesc;
-	static PFN_GetDomain s_pfnGetDomain;
+	static PFN_GetModule s_pfnGetModule;
 	static PFN_GetLoaderModule s_pfnGetLoaderModule;
 
 public:
@@ -100,13 +99,16 @@ public:
 			pDest = (LPVOID*)&(MethodDesc::s_pfnContainsGenericVariables);
 		else if( wcscmp( L"MethodDesc::GetWrappedMethodDesc", wszName) == 0 )
 			pDest = (LPVOID*)&(MethodDesc::s_pfnGetWrappedMethodDesc);
-		else if( wcscmp( L"MethodDesc::GetDomain", wszName) == 0 )
-			pDest = (LPVOID*)&(MethodDesc::s_pfnGetDomain);
+		else if( wcscmp( L"MethodDesc::GetModule", wszName) == 0 )
+			pDest = (LPVOID*)&(MethodDesc::s_pfnGetModule);
 		else if( wcscmp( L"MethodDesc::GetLoaderModule", wszName) == 0 )
 			pDest = (LPVOID*)&(MethodDesc::s_pfnGetLoaderModule);
 
 		if( pDest )
 			*pDest = (LPVOID)ulAddr;
+
+		/*if (wcsncmp(wszName, L"MethodDesc::", 12) == 0)
+			OutputDebugString(wszName);*/
 	}
 
 	static BOOL IsInitialized(void)
@@ -116,10 +118,9 @@ public:
 			s_pfnGetNumGenericMethodArgs &&
 			s_pfnStripMethodInstantiation &&
 			s_pfnHasClassOrMethodInstantiation &&
-			s_pfnHasClassOrMethodInstantiation &&
 			s_pfnContainsGenericVariables &&
 			s_pfnGetWrappedMethodDesc &&
-			s_pfnGetDomain &&
+			s_pfnGetModule &&
 			s_pfnGetLoaderModule;
 	}
 };
@@ -138,10 +139,8 @@ class LoadedMethodDescIterator
 	friend class CSymbolAddressCache;
 
 	typedef void (LoadedMethodDescIterator::*PFN_LoadedMethodDescIteratorConstructor)(AppDomain * pAppDomain, Module *pModule,	mdMethodDef md);
-	typedef void (LoadedMethodDescIterator::*PFN_LoadedMethodDescIteratorConstructor_v45)(AppDomain * pAppDomain, Module *pModule,	mdMethodDef md, AssemblyIterationMode mode);
 	typedef void (LoadedMethodDescIterator::*PFN_Start)(AppDomain * pAppDomain, Module *pModule, mdMethodDef md);
-	typedef BOOL (LoadedMethodDescIterator::*PFN_Next_v4)(LPVOID pParam);
-	typedef BOOL (LoadedMethodDescIterator::*PFN_Next_v2)(void);
+	typedef BOOL (LoadedMethodDescIterator::*PFN_Next)(LPVOID pParam);
 	typedef MethodDesc* (LoadedMethodDescIterator::*PFN_Current)(void);
 public:
 	LoadedMethodDescIterator(AppDomain * pAppDomain, Module *pModule, mdMethodDef md)
@@ -150,8 +149,12 @@ public:
 		memset( dummy2, 0, sizeof(dummy2));
 		if( s_pfnConstructor )
 			(this->*s_pfnConstructor)( pAppDomain, pModule, md);
-		if( s_pfnConstructor_v45 )
-			(this->*s_pfnConstructor_v45)( pAppDomain, pModule, md, AssemblyIterationMode_Default);
+	}
+
+	LoadedMethodDescIterator(void) 
+	{
+		memset(dummy, 0, sizeof(dummy));
+		memset(dummy2, 0, sizeof(dummy2));
 	}
 
 	void Start(AppDomain * pAppDomain, Module *pModule, mdMethodDef md) 
@@ -160,11 +163,8 @@ public:
 	}
 	BOOL Next() 
 	{
-		if( s_pfnNext_v4 )
-			return (this->*s_pfnNext_v4)(dummy2); 
-
-		if( s_pfnNext_v2 )
-			return (this->*s_pfnNext_v2)(); 
+		if( s_pfnNext )
+			return (this->*s_pfnNext)(dummy2); 
 
 		return FALSE;
 	}
@@ -176,15 +176,10 @@ private:
 	// class CollectibleAssemblyHolder<class DomainAssembly *> parameter for Next() in .Net4.0 and above	
 	BYTE dummy2[10240]; 
 
-	// constructor for .Net2.0 & .Net 4.0
 	static PFN_LoadedMethodDescIteratorConstructor s_pfnConstructor;
 
-	// constructor for .Net4.5
-	static PFN_LoadedMethodDescIteratorConstructor_v45 s_pfnConstructor_v45;
-
 	static PFN_Start s_pfnStart;
-	static PFN_Next_v4 s_pfnNext_v4;
-	static PFN_Next_v2 s_pfnNext_v2; 
+	static PFN_Next s_pfnNext;
 	static PFN_Current s_pfnCurrent;
 
 public:
@@ -193,40 +188,11 @@ public:
 		LPVOID* pDest = NULL;
 		if( wcscmp( L"LoadedMethodDescIterator::LoadedMethodDescIterator", pSymbolInfo->Name) == 0 )
 		{
-			switch(g_tDotNetVersion)
-			{
-			case DotNetVersion_20:
-			case DotNetVersion_40:
-				pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnConstructor);
-				break;
-
-			
-			case DotNetVersion_45:
-				pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnConstructor_v45);
-				break;
-
-			default:
-				ATLASSERT(FALSE);
-				return;
-			}
+			pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnConstructor);
 		}
 		else if( wcscmp( L"LoadedMethodDescIterator::Next", pSymbolInfo->Name) == 0 )
 		{
-			switch(g_tDotNetVersion)
-			{
-			case DotNetVersion_20:
-				pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnNext_v2);
-				break;
-
-			case DotNetVersion_40:
-			case DotNetVersion_45:
-				pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnNext_v4);
-				break;
-
-			default:
-				ATLASSERT(FALSE);
-				return;
-			}
+			pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnNext);
 		}
 		else if( wcscmp( L"LoadedMethodDescIterator::Start", pSymbolInfo->Name) == 0 )
 			pDest = (LPVOID*)&(LoadedMethodDescIterator::s_pfnStart);
@@ -235,13 +201,14 @@ public:
 		
 		if( pDest )
 			*pDest = (LPVOID)pSymbolInfo->Address;
+
+		/*if (wcsncmp(pSymbolInfo->Name, L"LoadedMethodDescIterator::", 26) == 0)
+			OutputDebugString(pSymbolInfo->Name);*/
 	}
 
 	static BOOL IsInitialized(void)
 	{
-		return (s_pfnConstructor || s_pfnConstructor_v45) &&
-			(s_pfnNext_v4 || s_pfnNext_v2) &&
-			s_pfnCurrent;
+		return /*s_pfnConstructor && */s_pfnNext && s_pfnCurrent;
 	}
 };
 

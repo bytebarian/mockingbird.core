@@ -42,8 +42,7 @@ private:
 		Status_Error_DbgHelpNotFound = -4,
 		Status_Error_JITNotFound = -5,
 		Status_Error_DownloadPDBFailed = -6,
-		Status_Error_CLRNotFound = -7,
-		Status_Error_CanNotDetermineDotNetVersion = -8
+		Status_Error_CLRNotFound = -7
 	};
 
 	static INT s_nStatus;

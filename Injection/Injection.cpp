@@ -92,10 +92,11 @@ BOOL CInjection::StartUpdateILCodes( MethodTable * pMethodTable
 
 		// find out all the instantiations of this generic method
 		Module * pModule = pMethodDesc->GetLoaderModule();
-		AppDomain * pAppDomain = pMethodDesc->GetDomain();
+		//AppDomain * pAppDomain = (AppDomain*)(pMethodDesc->GetDomain());
 		if( pModule )
 		{
-			LoadedMethodDescIterator * pLoadedMethodDescIter = new LoadedMethodDescIterator( pAppDomain, pModule, md);
+			//LoadedMethodDescIterator * pLoadedMethodDescIter = new LoadedMethodDescIterator( pAppDomain, pModule, md);
+			LoadedMethodDescIterator* pLoadedMethodDescIter = new LoadedMethodDescIterator();
 			while(pLoadedMethodDescIter->Next())
 			{
 				MethodDesc * pMD = pLoadedMethodDescIter->Current();
@@ -202,8 +203,6 @@ DWORD __stdcall CInjection::Initialize(LPVOID lpParameter )
 
 	// find the JIT module
 	g_hJitModule = GetModuleHandleA("clrjit.dll");
-	if( !g_hJitModule )
-		g_hJitModule = GetModuleHandleA("mscorjit.dll");
 	if( g_hJitModule == NULL )
 	{
 		s_nStatus = Status_Error_JITNotFound;
@@ -212,19 +211,11 @@ DWORD __stdcall CInjection::Initialize(LPVOID lpParameter )
 	}
 
 	// find the CLR module
-	g_hClrModule = GetModuleHandleA("clr.dll");
-	if( !g_hClrModule )
-		g_hClrModule = GetModuleHandleA("mscorwks.dll");
+	g_hClrModule = GetModuleHandleA("coreclr.dll");
 	if( g_hClrModule == NULL)
 	{
 		s_nStatus = Status_Error_CLRNotFound;
 		SetEvent( s_hEvent );
-		return FALSE;
-	}
-	if (!DetermineDotNetVersion())
-	{
-		s_nStatus = Status_Error_CanNotDetermineDotNetVersion;
-		SetEvent(s_hEvent);
 		return FALSE;
 	}
 
