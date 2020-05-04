@@ -130,6 +130,21 @@ namespace Mockingbird
             UpdateILCodes(method, mock.Method.GetMethodBody().GetILAsByteArray());
         }
 
+        public static void Mock(MethodBase method, MethodBase mock)
+        {
+            UpdateILCodes(method, mock.GetMethodBody().GetILAsByteArray());
+        }
+
+        public static void Mock(MethodBase method, MethodBody mock)
+        {
+            UpdateILCodes(method, mock.GetILAsByteArray());
+        }
+
+        public static void Mock(MethodBase method, byte[] mock)
+        {
+            UpdateILCodes(method, mock);
+        }
+
         private static void UpdateILCodes(MethodBase method, byte[] ilCodes)
         {
             if (_updateILCodesMethod == null)
