@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mockingbird\Mockingbird.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
   </ItemGroup>
 
 </Project>
