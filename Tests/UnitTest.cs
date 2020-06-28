@@ -11,32 +11,6 @@ namespace Tests
     {
         public Func<int, int, int> act;
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static int GetLargerNumberStatic(int a, int b)
-        {
-
-            if (a > b)
-            {
-                return b;
-            }
-            else
-            {
-                return a;
-            }
-        }
-
-        public string GetLargerObject<T>(T a, T b) where T : IComparable
-        {
-            if (a.CompareTo(b) > 0)
-            {
-                return b.ToString();
-            }
-            else
-            {
-                return a.ToString();
-            }
-        }
-
         [SetUp]
         public void Setup()
         {
@@ -141,24 +115,6 @@ namespace Tests
 
             Assert.AreEqual(2, resultAfter);
             Assert.AreEqual(1, concreteResult);
-        }
-
-        [Test]
-        public void GenericMethodTest()
-        {
-            var test = new Test();
-            var result = test.GetLargerObject(1, 2);
-
-            Assert.AreEqual("2", result);
-
-            var methodInfo = typeof(Test).GetMethod("GetLargerObject");
-            var mock = GetType().GetMethod("GetLargerObject");
-            MockEngine.Mock(methodInfo, mock);
-
-            var testAfter = new Test();
-            var resultAfter = test.GetLargerObject(1, 2);
-
-            Assert.AreEqual("1", result);
         }
 
         [Test]

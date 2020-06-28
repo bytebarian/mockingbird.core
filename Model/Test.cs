@@ -85,6 +85,29 @@ namespace Model
                 return a.ToString();
             }
         }
+
+        public string GenericMethodToBeReplaced<T, K>(T t, K k)
+        {
+            int a = 1;
+            int b = 2;
+            if (a > b)
+                a = b;
+            else
+                b = a;
+
+            return string.Format("Original generic method is being called!"
+                , typeof(T).FullName
+                , typeof(K).FullName
+                );
+        }
+
+        public string GenericMethodSourceILCodeToBeCopiedFrom<T, K>(T t, K k)
+        {
+            return string.Format("Modifed generic method is being called! Type 1 = {0}; Type 2 = {1}"
+                , typeof(T).FullName
+                , typeof(K).FullName
+                );
+        }
     }
 
     public class ConcreteTest : Test
