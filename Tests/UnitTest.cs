@@ -11,6 +11,20 @@ namespace Tests
     {
         public Func<int, int, int> act;
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static int GetLargerNumberStatic(int a, int b)
+        {
+
+            if (a > b)
+            {
+                return b;
+            }
+            else
+            {
+                return a;
+            }
+        }
+
         [SetUp]
         public void Setup()
         {
